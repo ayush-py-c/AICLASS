@@ -3,6 +3,7 @@ require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const path = require("path");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 // Make sure these model files exist in ./models/message and ./models/memory
 const Message = require("./models/message");
@@ -12,10 +13,15 @@ const Memory = require("./models/memory");
 const fetch = (...args) =>
   import("node-fetch").then(({ default: fetch }) => fetch(...args));
 
-// Reverie API configuration (direct API calls instead of client library)
+// Gemini AI configuration
+const GEMINI_API_KEY =
+  process.env.GEMINI_API_KEY || "AIzaSyBB6DE0I5_9A2AdNY2rDV8uOzhSvkAGyck";
+const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+
+// Reverie API configuration (direct API calls)
 const REVERIE_API_KEY = process.env.REVERIE_API_KEY || "YOUR-API-KEY";
 const REVERIE_APP_ID = process.env.REVERIE_APP_ID || "YOUR-APP-ID";
-const REVERIE_TTS_URL = "https://revapi.reverieinc.com/tts";
+const REVERIE_TTS_URL = "https://revapi.reverieinc.com/";
 
 // dynamic import for franc-min (language detection)
 let franc = () => "eng";
@@ -198,28 +204,31 @@ app.post("/tts", async (req, res) => {
     }
 
     const langCode = language || "en";
+    // Map language code to speaker format (e.g., "hi_female", "en_female")
+    const speaker = `${langCode}_female`;
+
     console.log(
-      `🎙️  TTS Request: language="${langCode}", text="${text.substring(0, 50)}${
-        text.length > 50 ? "..." : ""
-      }" (${text.length} chars)`
+      `🎙️  TTS Request: language="${langCode}", speaker="${speaker}", text="${text.substring(
+        0,
+        50
+      )}${text.length > 50 ? "..." : ""}" (${text.length} chars)`
     );
 
     // Special handling for Assamese - ensure proper encoding
     const textToSpeak = text.trim();
 
-    // Call Reverie TTS API directly
+    // Call Reverie TTS API directly with correct headers
     const reverieResponse = await fetch(REVERIE_TTS_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json; charset=utf-8",
         "REV-API-KEY": REVERIE_API_KEY,
         "REV-APP-ID": REVERIE_APP_ID,
+        "REV-APPNAME": "tts",
+        speaker: speaker,
       },
       body: JSON.stringify({
         text: textToSpeak,
-        speaker: langCode,
-        speed: 1.0,
-        pitch: 1.0,
       }),
     });
 
@@ -380,121 +389,47 @@ Current context:
 - User's previous messages: ${context}
 - Remembered facts: ${memoryContext}
 - Current Date/Time in user's location (${city}): ${localDate}, ${localTime}.
-- Current Weather: ${weatherText || "Not requested"}`;
+- Current Weather: ${weatherText || "Not requested"}
 
-    // Ollama settings
-    const ollamaHost = process.env.OLLAMA_HOST || "http://localhost:11434";
-    // DEFAULT MODEL: use the exact model name shown by `ollama list`. Example: 'llama2:7b-chat'
-    const model = process.env.OLLAMA_MODEL || "llama2:7b-chat";
+Important: Respond ONLY with your answer in ${langCode} language. Do not include any system prompts or internal thoughts in your response.`;
 
-    const requestUrl = `${ollamaHost}/api/generate`;
-    console.log("OLLAMA requestUrl=", requestUrl);
-    console.log("OLLAMA model=", model);
+    console.log(`🤖 Gemini: Generating response in language: ${langCode}`);
 
-    // Build payload
-    const payload = {
-      model,
-      prompt: `System: ${systemPrompt}\nUser: ${trimmed}\nAssistant:`,
-      stream: true,
-    };
+    // Use Gemini API
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-    const response = await fetch(requestUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+    const fullPrompt = `${systemPrompt}\n\nUser: ${trimmed}\n\nAssistant:`;
 
-    // improved error reporting
-    if (!response.ok) {
-      const text = await response.text().catch(() => "<no-body>");
-      throw new Error(
-        `Ollama API error: ${response.status} ${response.statusText} - ${text}`
-      );
-    }
+    // Generate response with streaming
+    const result = await model.generateContentStream(fullPrompt);
 
-    // stream parsing: robust to JSON chunks split across TCP packets
-    const decoder = new TextDecoder();
-    let buffer = "";
     let fullReply = "";
 
-    for await (const chunk of response.body) {
-      const chunkText = decoder.decode(chunk, { stream: true });
-      buffer += chunkText;
-
-      // split on newline. Keep last item in buffer if incomplete.
-      const parts = buffer.split(/\r?\n/);
-      buffer = parts.pop(); // last chunk may be partial
-      for (const part of parts) {
-        const line = part.trim();
-        if (!line) continue;
-        try {
-          // Ollama sends newline-delimited JSON per chunk
-          const parsed = JSON.parse(line);
-          if (parsed.response) {
-            // send SSE token event with both speechLang and reverieLang
-            res.write(
-              `data: ${JSON.stringify({
-                token: parsed.response,
-                language: speechLang,
-                reverieLang: reverieLang,
-              })}\n\n`
-            );
-            fullReply += parsed.response;
-          }
-          if (parsed.done) {
-            // save assistant message and close stream
-            await Message.create({
-              text: fullReply,
-              role: "assistant",
-              language: langCode,
-              createdAt: new Date(),
-            });
-            res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
-            return res.end();
-          }
-        } catch (e) {
-          // If JSON.parse fails for a line, log and continue (might be transient)
-          console.warn("Failed to parse line from Ollama stream:", line, e);
-        }
+    // Stream the response
+    for await (const chunk of result.stream) {
+      const chunkText = chunk.text();
+      if (chunkText) {
+        fullReply += chunkText;
+        // Send SSE token event with both speechLang and reverieLang
+        res.write(
+          `data: ${JSON.stringify({
+            token: chunkText,
+            language: speechLang,
+            reverieLang: reverieLang,
+          })}\n\n`
+        );
       }
     }
 
-    // if stream ends without done=true, flush remainder
-    if (buffer) {
-      try {
-        const parsed = JSON.parse(buffer);
-        if (parsed.response) {
-          res.write(
-            `data: ${JSON.stringify({
-              token: parsed.response,
-              language: speechLang,
-              reverieLang: reverieLang,
-            })}\n\n`
-          );
-          fullReply += parsed.response;
-        }
-        if (parsed.done) {
-          await Message.create({
-            text: fullReply,
-            role: "assistant",
-            language: langCode,
-            createdAt: new Date(),
-          });
-        }
-      } catch (e) {
-        // ignore
-      }
-    }
+    // Save assistant message
+    await Message.create({
+      text: fullReply,
+      role: "assistant",
+      language: langCode,
+      createdAt: new Date(),
+    });
 
-    // fallback end
-    if (fullReply) {
-      await Message.create({
-        text: fullReply,
-        role: "assistant",
-        language: langCode,
-        createdAt: new Date(),
-      });
-    }
+    res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
     res.end();
   } catch (err) {
     console.error("/stream error", err);
