@@ -2,178 +2,711 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Farmer Chatbot</title>
     <style>
-      body {
-        font-family: Arial, system-ui;
-        background: #f2f2f2;
+      /* Complete redesign with black-green gradient and premium animations */
+      :root {
+        /* Black-green gradient color system */
+        --primary-gradient: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%);
+        --primary-dark-gradient: linear-gradient(135deg, #0d3d3a 0%, #0f766e 100%);
+        --primary: #14b8a6;
+        --primary-dark: #0f766e;
+        --primary-light: #5eead4;
+        --secondary: #0f766e;
+        --accent: #06b6d4;
+        
+        --bg-primary: #ffffff;
+        --bg-secondary: #f8fafc;
+        --bg-tertiary: #f1f5f9;
+        
+        --text-primary: #0f172a;
+        --text-secondary: #475569;
+        --text-tertiary: #94a3b8;
+        
+        --border: #e2e8f0;
+        --border-dark: #cbd5e1;
+        
+        --user-msg-bg: #ccfbf1;
+        --user-msg-text: #0d3d3a;
+        --assistant-msg-bg: #ffffff;
+        --assistant-msg-border: #cffafe;
+        --assistant-msg-text: #0f172a;
+
+        --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 12px rgba(15, 118, 110, 0.15);
+        --shadow-lg: 0 10px 28px rgba(15, 118, 110, 0.2);
+        --shadow-xl: 0 20px 40px rgba(15, 118, 110, 0.25);
+      }
+
+      /* Dark theme with black background and green accents */
+      html.dark-theme {
+        --bg-primary: #0f172a;
+        --bg-secondary: #1a202c;
+        --bg-tertiary: #2d3748;
+        
+        --text-primary: #f1f5f9;
+        --text-secondary: #cbd5e1;
+        --text-tertiary: #94a3b8;
+        
+        --border: #334155;
+        --border-dark: #475569;
+        
+        --user-msg-bg: #0d3d3a;
+        --user-msg-text: #5eead4;
+        --assistant-msg-bg: #1a202c;
+        --assistant-msg-border: #0f766e;
+        --assistant-msg-text: #f1f5f9;
+
+        --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+        --shadow-md: 0 4px 12px rgba(20, 184, 166, 0.2);
+        --shadow-lg: 0 10px 28px rgba(20, 184, 166, 0.15);
+        --shadow-xl: 0 20px 40px rgba(20, 184, 166, 0.1);
+      }
+
+      * {
         margin: 0;
         padding: 0;
+        box-sizing: border-box;
       }
-      .chat-container {
-        max-width: 760px;
-        margin: 24px auto;
-        background: #fff;
-        padding: 18px;
-        border-radius: 12px;
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+        transition: background-color 0.4s ease, color 0.4s ease;
+        line-height: 1.6;
+      }
+
+      .app-container {
         display: flex;
         flex-direction: column;
+        height: 100vh;
+        background: var(--bg-secondary);
       }
-      h2 {
-        text-align: center;
-        color: #2e7d32;
-        margin: 6px 0 12px;
-      }
-      .status {
+
+      /* Enhanced header with premium black-green gradient and animations */
+      .header {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 1.5rem;
+        box-shadow: var(--shadow-lg);
         display: flex;
-        gap: 12px;
+        justify-content: space-between;
         align-items: center;
-        font-size: 0.9rem;
-        color: #444;
-        margin-bottom: 8px;
-        flex-wrap: wrap;
+        position: relative;
+        overflow: hidden;
       }
-      .messages {
-        max-height: 560px;
-        overflow-y: auto;
-        margin-bottom: 12px;
-        padding: 8px;
+
+      /* Animated gradient background effect */
+      .header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, transparent 50%);
+        animation: shimmer 6s infinite;
+        pointer-events: none;
+      }
+
+      @keyframes shimmer {
+        0% { transform: translate(-50%, -50%); }
+        100% { transform: translate(0%, 0%); }
+      }
+
+      .header-title {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 1.5rem;
+        font-weight: 700;
+        position: relative;
+        z-index: 1;
+        animation: slideInLeft 0.6s ease;
+      }
+
+      @keyframes slideInLeft {
+        from {
+          opacity: 0;
+          transform: translateX(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+
+      .header-icon {
+        font-size: 1.75rem;
+        animation: bounce 2s infinite;
+      }
+
+      @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-8px); }
+      }
+
+      .header-controls {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        position: relative;
+        z-index: 1;
+      }
+
+      /* Animated theme toggle with rotation */
+      .theme-toggle {
+        background: rgba(255, 255, 255, 0.2);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        color: white;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        transition: all 0.3s ease;
+        animation: fadeIn 0.6s ease;
+      }
+
+      @keyframes fadeIn {
+        from { opacity: 0; transform: scale(0.8); }
+        to { opacity: 1; transform: scale(1); }
+      }
+
+      .theme-toggle:hover {
+        background: rgba(255, 255, 255, 0.3);
+        border-color: rgba(255, 255, 255, 0.5);
+        transform: scale(1.1) rotate(20deg);
+      }
+
+      .main-content {
+        flex: 1;
+        display: flex;
+        overflow: hidden;
+      }
+
+      .chat-container {
+        flex: 1;
         display: flex;
         flex-direction: column;
-        gap: 8px;
+        background: var(--bg-primary);
+        margin: 1rem;
+        border-radius: 20px;
+        box-shadow: var(--shadow-xl);
+        overflow: hidden;
+        animation: fadeInUp 0.6s ease;
       }
-      .message {
-        padding: 10px 14px;
-        border-radius: 14px;
-        max-width: 78%;
-        word-wrap: break-word;
+
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Enhanced status bar with gradient line */
+      .status {
+        background: var(--bg-secondary);
+        border-bottom: 2px solid var(--primary);
+        padding: 1rem;
+        display: flex;
+        gap: 1.5rem;
+        align-items: center;
+        flex-wrap: wrap;
+        font-size: 0.875rem;
+        color: var(--text-secondary);
         position: relative;
       }
-      .user {
-        align-self: flex-end;
-        background: #dcf8c6;
-        text-align: right;
-        border-bottom-right-radius: 6px;
+
+      .status::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        height: 2px;
+        width: 100%;
+        background: linear-gradient(90deg, transparent, var(--primary), transparent);
+        animation: slideRight 2s ease-in-out infinite;
       }
-      .assistant {
-        align-self: flex-start;
-        background: #fff;
-        border: 1px solid #eee;
-        color: #111;
-        border-bottom-left-radius: 6px;
+
+      @keyframes slideRight {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
       }
-      .meta {
-        font-size: 0.75rem;
-        color: #666;
-        margin-top: 6px;
-      }
-      form {
+
+      .status-item {
         display: flex;
-        gap: 8px;
         align-items: center;
-        margin-top: 6px;
+        gap: 0.5rem;
       }
-      input[type="text"] {
-        flex: 1;
-        padding: 10px 12px;
-        border-radius: 20px;
-        border: 1px solid #ccc;
-        font-size: 1rem;
+
+      /* Animated status indicator */
+      .status-indicator {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--primary);
+        animation: pulse 2s infinite;
       }
-      button {
-        padding: 10px 14px;
-        border-radius: 20px;
-        border: none;
-        background: #2e7d32;
-        color: white;
+
+      @keyframes pulse {
+        0%, 100% {
+          box-shadow: 0 0 0 0 rgba(20, 184, 166, 0.7);
+        }
+        50% {
+          box-shadow: 0 0 0 6px rgba(20, 184, 166, 0);
+        }
+      }
+
+      .language-selector {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      select {
+        padding: 0.5rem 0.75rem;
+        border: 1.5px solid var(--border);
+        border-radius: 10px;
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        font-size: 0.875rem;
         cursor: pointer;
+        transition: all 0.3s ease;
       }
-      button.secondary {
-        background: #4caf50;
+
+      select:hover {
+        border-color: var(--primary);
+        box-shadow: var(--shadow-md);
       }
+
+      select:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.15);
+      }
+
+      /* Messages area with scrolling */
+      .messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        background: var(--bg-primary);
+      }
+
+      .messages::-webkit-scrollbar {
+        width: 10px;
+      }
+
+      .messages::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      .messages::-webkit-scrollbar-thumb {
+        background: var(--primary-light);
+        border-radius: 6px;
+        transition: background 0.3s ease;
+      }
+
+      .messages::-webkit-scrollbar-thumb:hover {
+        background: var(--primary);
+      }
+
+      /* Enhanced messages area with better animations */
+      .message {
+        display: flex;
+        animation: slideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        max-width: 75%;
+      }
+
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateY(15px) scale(0.95);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      .message.user {
+        align-self: flex-end;
+        justify-content: flex-end;
+      }
+
+      .message.assistant {
+        align-self: flex-start;
+      }
+
+      .message-content {
+        padding: 0.75rem 1rem;
+        border-radius: 14px;
+        word-wrap: break-word;
+        transition: all 0.3s ease;
+      }
+
+      .message.user .message-content {
+        background: var(--user-msg-bg);
+        color: var(--user-msg-text);
+        border-radius: 14px 4px 14px 14px;
+        font-weight: 500;
+        box-shadow: 0 2px 8px rgba(20, 184, 166, 0.2);
+      }
+
+      .message.user .message-content:hover {
+        transform: translateX(-4px);
+        box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3);
+      }
+
+      .message.assistant .message-content {
+        background: var(--assistant-msg-bg);
+        color: var(--assistant-msg-text);
+        border: 1.5px solid var(--assistant-msg-border);
+        border-radius: 14px 14px 4px 14px;
+        box-shadow: 0 2px 8px rgba(15, 118, 110, 0.1);
+      }
+
+      .message.assistant .message-content:hover {
+        transform: translateX(4px);
+        box-shadow: 0 4px 12px rgba(15, 118, 110, 0.2);
+      }
+
+      .message-header {
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+        font-size: 0.875rem;
+        background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .message-text {
+        line-height: 1.5;
+      }
+
+      .message-meta {
+        font-size: 0.75rem;
+        opacity: 0.6;
+        margin-top: 0.5rem;
+      }
+
+      /* Animated typing indicator */
       #typing {
         font-style: italic;
-        color: #777;
+        color: var(--text-tertiary);
         display: none;
-        margin-bottom: 6px;
+        padding: 0.75rem 1rem;
+        font-size: 0.875rem;
+        animation: fadeInPulse 0.6s ease-in-out infinite;
       }
-      select {
-        padding: 8px;
-        border-radius: 8px;
-        border: 1px solid #ccc;
+
+      @keyframes fadeInPulse {
+        0%, 100% { opacity: 0.5; }
+        50% { opacity: 1; }
       }
-      .small {
-        font-size: 0.85rem;
-        color: #666;
+
+      /* Input area styling */
+      .input-area {
+        background: var(--bg-secondary);
+        border-top: 2px solid var(--primary);
+        padding: 1rem;
+        position: relative;
+      }
+
+      .input-area::before {
+        content: '';
+        position: absolute;
+        top: -2px;
+        left: 0;
+        height: 2px;
+        width: 100%;
+        background: linear-gradient(90deg, transparent, var(--primary), transparent);
+        animation: slideLeft 2s ease-in-out infinite;
+      }
+
+      @keyframes slideLeft {
+        0% { transform: translateX(100%); }
+        100% { transform: translateX(-100%); }
+      }
+
+      #chatForm {
+        display: flex;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+      }
+
+      input[type="text"] {
+        flex: 1;
+        padding: 0.75rem 1rem;
+        border: 1.5px solid var(--border);
+        border-radius: 24px;
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        font-size: 1rem;
+        transition: all 0.3s ease;
+      }
+
+      input[type="text"]::placeholder {
+        color: var(--text-tertiary);
+      }
+
+      input[type="text"]:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.15), var(--shadow-md);
+        transform: translateY(-1px);
+      }
+
+      /* Premium button styling with gradient and animations */
+      button {
+        padding: 0.75rem 1.5rem;
+        border-radius: 24px;
+        border: none;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        font-size: 0.875rem;
+        position: relative;
+        overflow: hidden;
+      }
+
+      button::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+      }
+
+      button:active::before {
+        width: 300px;
+        height: 300px;
+      }
+
+      #sendBtn {
+        background: var(--primary-gradient);
+        color: white;
+        min-width: 80px;
+        box-shadow: var(--shadow-md);
+      }
+
+      #sendBtn:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+      }
+
+      #sendBtn:active:not(:disabled) {
+        transform: translateY(0);
+      }
+
+      #sendBtn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      #sendBtn.stop-btn {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+      }
+
+      #sendBtn.stop-btn:hover {
+        box-shadow: 0 10px 28px rgba(239, 68, 68, 0.3);
+      }
+
+      .button-group {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+      }
+
+      .btn-secondary {
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        border: 1.5px solid var(--border);
+        box-shadow: var(--shadow-sm);
+      }
+
+      .btn-secondary:hover {
+        background: var(--bg-tertiary);
+        border-color: var(--primary);
+        box-shadow: var(--shadow-md);
+        transform: translateY(-2px);
+      }
+
+      #startMic {
+        background: linear-gradient(135deg, #06b6d4, #0891b2);
+        color: white;
+        border: none;
+      }
+
+      #startMic:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 28px rgba(6, 182, 212, 0.3);
+      }
+
+      #newChat {
+        color: var(--text-primary);
+      }
+
+      #newChat:hover {
+        background: var(--bg-tertiary);
+        box-shadow: var(--shadow-md);
+      }
+
+      /* Responsive design */
+      @media (max-width: 768px) {
+        .message {
+          max-width: 85%;
+        }
+
+        .header {
+          padding: 1rem;
+        }
+
+        .header-title {
+          font-size: 1.25rem;
+        }
+
+        .status {
+          gap: 1rem;
+          font-size: 0.75rem;
+        }
+
+        .language-selector {
+          width: 100%;
+          margin-left: 0;
+          margin-top: 0.5rem;
+        }
+
+        .chat-container {
+          margin: 0.5rem;
+        }
+
+        .button-group {
+          width: 100%;
+        }
+
+        button {
+          flex: 1;
+          min-width: 70px;
+        }
       }
     </style>
   </head>
   <body>
-    <div class="chat-container">
-      <h2>Farmer Chatbot</h2>
-
-      <div class="status">
-        <div id="locStatus" class="small">Location: detecting…</div>
-        <div id="weatherStatus" class="small"></div>
-        <div id="timeStatus" class="small"></div>
-        <div style="margin-left: auto">
-          Speak language:
-          <select id="langSelect" title="Override speech language">
-            <option value="auto">Auto (browser)</option>
-            <option value="en-US">English (en)</option>
-            <option value="hi-IN">Hindi (hi)</option>
-            <option value="as-IN">Assamese (as)</option>
-            <option value="bn-IN">Bengali (bn)</option>
-            <option value="gu-IN">Gujarati (gu)</option>
-            <option value="kn-IN">Kannada (kn)</option>
-            <option value="ml-IN">Malayalam (ml)</option>
-            <option value="mr-IN">Marathi (mr)</option>
-            <option value="or-IN">Odia (or)</option>
-            <option value="pa-IN">Punjabi (pa)</option>
-            <option value="ta-IN">Tamil (ta)</option>
-            <option value="te-IN">Telugu (te)</option>
-            <option value="ne-NP">Nepali (ne)</option>
-            <option value="ur-IN">Urdu (ur)</option>
-            <option value="fr-FR">French (fr)</option>
-            <option value="es-ES">Spanish (es)</option>
-          </select>
+    <div class="app-container">
+      <!-- Enhanced header with theme toggle -->
+      <div class="header">
+        <div class="header-title">
+          <span class="header-icon">🌾</span>
+          <span>Farmer Chatbot</span>
+        </div>
+        <div class="header-controls">
+          <button class="theme-toggle" id="themeToggle" title="Toggle dark mode">
+            🌙
+          </button>
         </div>
       </div>
 
-      <div class="messages" id="messages">
-        <% messages.forEach(msg => { %>
-        <div class="message <%= msg.role %>">
-          <strong><%= msg.role === 'user' ? 'You' : 'Assistant' %>:</strong>
-          <div><%- msg.text.replace(/\n/g, '<br />') %></div>
-          <div class="meta">
-            <%= new Date(msg.createdAt).toLocaleString() %> (<%= msg.language
-            %>)
+      <div class="main-content">
+        <div class="chat-container">
+          <!-- Modern status bar -->
+          <div class="status">
+            <div class="status-item">
+              <span class="status-indicator"></span>
+              <div id="locStatus">Location: detecting…</div>
+            </div>
+            <div class="status-item" id="weatherStatus"></div>
+            <div class="status-item" id="timeStatus"></div>
+            
+            <div class="language-selector">
+              <label style="font-size: 0.875rem; color: var(--text-secondary);">Language:</label>
+              <select id="langSelect" title="Override speech language">
+                <option value="auto">Auto (browser)</option>
+                <option value="en-US">English</option>
+                <option value="hi-IN">Hindi</option>
+                <option value="as-IN">Assamese</option>
+                <option value="bn-IN">Bengali</option>
+                <option value="gu-IN">Gujarati</option>
+                <option value="kn-IN">Kannada</option>
+                <option value="ml-IN">Malayalam</option>
+                <option value="mr-IN">Marathi</option>
+                <option value="or-IN">Odia</option>
+                <option value="pa-IN">Punjabi</option>
+                <option value="ta-IN">Tamil</option>
+                <option value="te-IN">Telugu</option>
+                <option value="ne-NP">Nepali</option>
+                <option value="ur-IN">Urdu</option>
+                <option value="fr-FR">French</option>
+                <option value="es-ES">Spanish</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Messages display area -->
+          <div class="messages" id="messages"></div>
+
+          <div id="typing">Assistant is preparing a voice reply...</div>
+
+          <!-- Input section -->
+          <div class="input-area">
+            <form id="chatForm">
+              <input
+                type="text"
+                id="userInput"
+                placeholder="Ask your question..."
+                autocomplete="off"
+              />
+              <button type="submit" id="sendBtn">Send</button>
+            </form>
+
+            <div class="button-group">
+              <button id="startMic" class="btn-secondary">🎤 Speak</button>
+              <button id="newChat" class="btn-secondary">🆕 New Chat</button>
+            </div>
           </div>
         </div>
-        <% }) %>
-      </div>
-
-      <div id="typing">Assistant is preparing a voice reply...</div>
-
-      <form id="chatForm">
-        <input
-          type="text"
-          id="userInput"
-          placeholder="Ask your question..."
-          autocomplete="off"
-        />
-        <button type="submit" id="sendBtn">Send</button>
-      </form>
-
-      <div style="display: flex; gap: 8px; margin-top: 8px">
-        <button id="startMic" class="secondary">🎤 Speak</button>
-        <button id="newChat">🆕 New Chat</button>
       </div>
     </div>
 
     <script>
-      // DOM elements
+      const themeToggle = document.getElementById('themeToggle');
+      const htmlElement = document.documentElement;
+
+      // Load saved theme preference
+      const savedTheme = localStorage.getItem('theme') || 'light';
+      if (savedTheme === 'dark') {
+        htmlElement.classList.add('dark-theme');
+        themeToggle.textContent = '☀️';
+      }
+
+      // Theme toggle functionality
+      themeToggle.addEventListener('click', () => {
+        htmlElement.classList.toggle('dark-theme');
+        const isDark = htmlElement.classList.contains('dark-theme');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        themeToggle.textContent = isDark ? '☀️' : '🌙';
+      });
+
       const messagesDiv = document.getElementById("messages");
       const chatForm = document.getElementById("chatForm");
       const userInput = document.getElementById("userInput");
@@ -190,9 +723,8 @@
       let voicesReady = false;
       let availableVoices = [];
       let stopRequested = false;
-      let currentAudio = null; // Track current audio playback
+      let currentAudio = null;
 
-      // --- Helper to escape HTML ---
       function escapeHtml(s) {
         if (!s) return "";
         return String(s)
@@ -207,29 +739,33 @@
         const metaStr =
           escapeHtml(meta || new Date().toLocaleString()) +
           (langCode ? ` (${escapeHtml(langCode)})` : "");
-        d.innerHTML = `<strong>${role}:</strong><div>${escapeHtml(text).replace(
-          /\n/g,
-          "<br>"
-        )}</div>
-                 <div class="meta">${metaStr}</div>`;
+        
+        const content = document.createElement("div");
+        content.className = "message-content";
+        content.innerHTML = `<div class="message-header">${role}:</div>
+                 <div class="message-text">${escapeHtml(text).replace(
+                   /\n/g,
+                   "<br>"
+                 )}</div>
+                 <div class="message-meta">${metaStr}</div>`;
+        
+        d.appendChild(content);
         messagesDiv.appendChild(d);
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
       }
 
-      // --- Stop/Send button helpers ---
       function setSendAsStop(isStop) {
         if (isStop) {
           sendBtn.textContent = "Stop";
-          sendBtn.style.background = "#f44336";
+          sendBtn.classList.add("stop-btn");
         } else {
           sendBtn.textContent = "Send";
-          sendBtn.style.background = "#2e7d32";
+          sendBtn.classList.remove("stop-btn");
         }
       }
 
       function cancelOngoing() {
         stopRequested = true;
-        // Stop any playing audio
         if (currentAudio) {
           currentAudio.pause();
           currentAudio = null;
@@ -239,7 +775,6 @@
         }
       }
 
-      // --- Fetch voices ---
       function loadVoices() {
         return new Promise((resolve) => {
           const synth = window.speechSynthesis;
@@ -258,7 +793,6 @@
         });
       }
 
-      // --- Preferred speech locale ---
       function getPreferredSpeechLocale(serverLocale) {
         const override = langSelect.value;
         if (override && override !== "auto") return override;
@@ -266,7 +800,6 @@
         return navigator.language || "en-US";
       }
 
-      // --- Speak function using Reverie TTS ---
       async function speakWithReverie(text, reverieLang) {
         if (!text?.trim()) {
           console.warn("⚠️  TTS: Empty text provided");
@@ -278,7 +811,6 @@
             `🎙️  Requesting TTS for language: ${reverieLang}, text length: ${text.length}`
           );
 
-          // Call server TTS endpoint
           const response = await fetch("/tts", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -293,7 +825,6 @@
               data.error || "Unknown error"
             );
 
-            // If fallback flag is set, use browser speech synthesis
             if (data.fallback) {
               console.log("🔄 Falling back to browser speech synthesis");
               const browserLang = francToSpeechLang(reverieLang);
@@ -314,7 +845,6 @@
             `✅ TTS audio received: ${data.audio.length} bytes (base64)`
           );
 
-          // Convert base64 to blob
           const binaryString = atob(data.audio);
           const bytes = new Uint8Array(binaryString.length);
           for (let i = 0; i < binaryString.length; i++) {
@@ -327,7 +857,6 @@
 
           console.log(`🔊 Playing audio for language: ${reverieLang}`);
 
-          // Play audio
           return new Promise((resolve) => {
             currentAudio = new Audio(audioUrl);
             currentAudio.onended = () => {
@@ -359,7 +888,6 @@
         }
       }
 
-      // --- Helper to map Reverie lang to browser lang ---
       function francToSpeechLang(reverieLang) {
         const map = {
           en: "en-US",
@@ -382,7 +910,6 @@
         return map[reverieLang] || "en-US";
       }
 
-      // --- Fallback: Browser speech synthesis ---
       function speakAndWait(text, locale) {
         return new Promise((resolve) => {
           if (!text) {
@@ -414,7 +941,6 @@
         });
       }
 
-      // --- Geolocation ---
       function getLocationPromise(timeout = 8000) {
         return new Promise((resolve) => {
           if (!navigator.geolocation) return resolve(null);
@@ -442,7 +968,6 @@
         )}, ${currentLocation.lon.toFixed(4)}`;
       }
 
-      // --- Streaming function with Stop ---
       async function sendStreamed(text) {
         if (!text?.trim()) return;
         appendMessage("You", text, new Date().toLocaleString());
@@ -481,17 +1006,20 @@
         let buffer = "";
         let fullReply = "";
         let assistantLang = null;
-        let reverieLang = null; // Store Reverie language code
+        let reverieLang = null;
 
         const metaTime = new Date().toLocaleString();
         const placeholder = document.createElement("div");
         placeholder.className = "message assistant";
-        placeholder.innerHTML = `<strong>Assistant:</strong><div></div><div class="meta">${escapeHtml(
+        const content = document.createElement("div");
+        content.className = "message-content";
+        content.innerHTML = `<div class="message-header">Assistant:</div><div class="message-text"></div><div class="message-meta">${escapeHtml(
           metaTime
         )}</div>`;
+        placeholder.appendChild(content);
         messagesDiv.appendChild(placeholder);
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
-        const bodyDiv = placeholder.querySelector("div");
+        const bodyDiv = content.querySelector(".message-text");
 
         while (true) {
           if (stopRequested) break;
@@ -512,7 +1040,7 @@
               const obj = JSON.parse(dataLine.replace(/^data:\s*/, ""));
               if (obj.token) {
                 assistantLang = assistantLang || obj.language || null;
-                reverieLang = reverieLang || obj.reverieLang || null; // Capture Reverie language
+                reverieLang = reverieLang || obj.reverieLang || null;
                 fullReply += obj.token;
               }
               if (obj.error) {
@@ -524,7 +1052,6 @@
         }
 
         if (!stopRequested && fullReply.trim()) {
-          // Try Reverie TTS first, fallback to browser speech synthesis
           if (reverieLang) {
             await speakWithReverie(fullReply.trim(), reverieLang);
           } else {
@@ -544,7 +1071,6 @@
         setSendAsStop(false);
       }
 
-      // --- Mic recognition ---
       startMic.addEventListener("click", async () => {
         const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!Rec) {
@@ -635,7 +1161,6 @@
         }
       });
 
-      // --- Send button click ---
       sendBtn.addEventListener("click", async (e) => {
         e.preventDefault();
         if (sendBtn.textContent === "Stop") {
@@ -646,14 +1171,12 @@
         if (t) await sendStreamed(t);
       });
 
-      // --- Form submit (fallback) ---
       chatForm.addEventListener("submit", async (e) => {
         e.preventDefault();
         const t = userInput.value.trim();
         if (t) await sendStreamed(t);
       });
 
-      // --- New chat ---
       newChatBtn.addEventListener("click", async () => {
         if (!confirm("Clear chat history and memory?")) return;
         try {
@@ -666,7 +1189,6 @@
         }
       });
 
-      // --- Init ---
       window.addEventListener("load", async () => {
         if (window.speechSynthesis) await loadVoices();
         initAutoDetect();

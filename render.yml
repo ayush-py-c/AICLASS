@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: farmer-chatbot
+    env: node
+    plan: free
+    buildCommand: "npm install"
+    startCommand: "node server.js"
+    envVars:
+      - key: NODE_VERSION
+        value: 18
+      - key: PORT
+        value: 5000
+      - key: MONGO_URI
+        sync: false
+      - key: OLLAMA_HOST
+        value: "http://127.0.0.1:11434"
+      - key: OLLAMA_MODEL
+        value: "tinyllama"
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: AI4BHARAT_API_KEY
+        sync: false
+      - key: REVERIE_API_KEY
+        sync: false
+      - key: REVERIE_APP_ID
+        sync: false
