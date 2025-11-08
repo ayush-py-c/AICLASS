@@ -46,7 +46,7 @@ Create a `.env` file in the root directory (use `.env.example` as template):
 
 ```env
 MONGO_URI=mongodb://localhost:27017/farmer-chatbot
-GEMINI_API_KEY=AIzaSyBB6DE0I5_9A2AdNY2rDV8uOzhSvkAGyck
+GEMINI_API_KEY=YOUR_API
 REVERIE_API_KEY=your-reverie-api-key
 REVERIE_APP_ID=your-reverie-app-id
 PORT=5000
